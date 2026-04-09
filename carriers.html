@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carriers – FreightFlow TMS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button id="hamburger" class="hamburger">&#9776;</button>
+        <h1>Carriers</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-new-carrier" class="btn btn-primary">+ New Carrier</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="filter-bar">
+        <input id="carrier-search" class="search-box" type="search" placeholder="Search carriers, MC#, contact…">
+        <select id="carrier-status-filter" class="filter-select">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Carrier Name</th>
+                <th>MC / DOT</th>
+                <th>Contact</th>
+                <th>Equipment</th>
+                <th>Drivers</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="carriers-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Carrier Modal -->
+  <div id="carrier-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="carrier-modal-title">New Carrier</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body"><form id="carrier-form"></form></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss>Cancel</button>
+        <button class="btn btn-primary" onclick="document.getElementById('carrier-form').requestSubmit()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drivers Modal -->
+  <div id="drivers-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Drivers – <span id="drivers-carrier-name"></span></h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="drivers-carrier-id">
+        <div id="drivers-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss>Close</button>
+        <button id="btn-add-driver" class="btn btn-primary">+ Add Driver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Driver Edit Modal -->
+  <div id="driver-modal" class="modal-overlay">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h3 id="driver-modal-title">Add Driver</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body"><form id="driver-form"></form></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss>Cancel</button>
+        <button class="btn btn-primary" onclick="document.getElementById('driver-form').requestSubmit()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/carriers.js"></script>
+</body>
+</html>

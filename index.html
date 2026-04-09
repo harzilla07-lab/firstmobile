@@ -3,24 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background-color: #f0f4f8;
-      font-family: sans-serif;
-    }
-    h1 {
-      font-size: 3rem;
-      color: #2d3748;
-    }
-  </style>
+  <title>Dashboard – FreightFlow TMS</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Hello, World!</h1>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button id="hamburger" class="hamburger">&#9776;</button>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="today-date" style="font-size:0.8rem;color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-grid" id="stats"></div>
+
+      <!-- Main Grid -->
+      <div class="dashboard-grid">
+        <!-- Recent Loads -->
+        <div class="table-wrap">
+          <div class="table-wrap-header">
+            <h3>Recent Loads</h3>
+            <a href="loads.html" class="btn btn-secondary btn-sm">View All</a>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Load #</th>
+                  <th>Route</th>
+                  <th>Pickup</th>
+                  <th>Status</th>
+                  <th>Rate</th>
+                </tr>
+              </thead>
+              <tbody id="recent-loads"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Stats Sidebar -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-title">Load Status Breakdown</div>
+            <div id="status-breakdown"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Available Drivers</div>
+            <div id="available-drivers"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+      const loads    = DB.get('loads');
+      const carriers = DB.get('carriers');
+      const customers= DB.get('customers');
+      const drivers  = DB.get('drivers');
+
+      const activeLoads   = loads.filter(l => !['delivered','cancelled'].includes(l.status));
+      const pendingLoads  = loads.filter(l => l.status === 'pending');
+      const deliveredLoads= loads.filter(l => l.status === 'delivered');
+      const totalRevenue  = loads.filter(l => l.status === 'delivered').reduce((s,l) => s + (+l.rate||0), 0);
+      const availDrivers  = drivers.filter(d => d.status === 'available');
+
+      // Stats
+      document.getElementById('stats').innerHTML = [
+        { icon:'📦', value: activeLoads.length,   label:'Active Loads',      sub: `${pendingLoads.length} pending dispatch` },
+        { icon:'✅', value: deliveredLoads.length, label:'Delivered (All)',   sub: 'Total completed loads' },
+        { icon:'💰', value: fmt$(totalRevenue),    label:'Revenue Collected', sub: 'Delivered loads only', big:true },
+        { icon:'🚛', value: carriers.filter(c=>c.status==='active').length, label:'Active Carriers', sub: `${availDrivers.length} drivers available` },
+        { icon:'🏢', value: customers.filter(c=>c.status==='active').length,label:'Active Customers', sub: 'Shippers & consignees' },
+      ].map(s => `
+        <div class="stat-card">
+          <div class="stat-icon">${s.icon}</div>
+          <div class="stat-value" style="${s.big?'font-size:1.4rem':''}">${s.value}</div>
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-sub">${s.sub}</div>
+        </div>`).join('');
+
+      // Recent loads (last 5)
+      const recent = [...loads].sort((a,b) => b.id - a.id).slice(0,5);
+      document.getElementById('recent-loads').innerHTML = recent.map(l => {
+        const shipper = DB.find('customers', l.shipperId);
+        return `<tr>
+          <td><a href="loads.html" style="color:var(--primary);font-weight:600;text-decoration:none">${esc(l.loadNumber)}</a></td>
+          <td style="max-width:160px"><div style="font-weight:500;font-size:0.8rem">${esc(l.origin)}</div><div style="color:var(--text-muted);font-size:0.75rem">→ ${esc(l.destination)}</div></td>
+          <td style="white-space:nowrap">${fmtDate(l.pickupDate)}</td>
+          <td>${badge(l.status)}</td>
+          <td style="font-weight:600">${fmt$(l.rate)}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">No loads yet</td></tr>';
+
+      // Status breakdown
+      const statuses = ['pending','dispatched','in-transit','delivered','cancelled'];
+      document.getElementById('status-breakdown').innerHTML = statuses.map(s => {
+        const cnt = loads.filter(l => l.status === s).length;
+        if (!cnt) return '';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+          <span>${badge(s)}</span>
+          <span style="font-weight:600">${cnt}</span>
+        </div>`;
+      }).join('') || '<p style="color:var(--text-muted);font-size:0.85rem">No loads</p>';
+
+      // Available drivers
+      document.getElementById('available-drivers').innerHTML = availDrivers.length
+        ? availDrivers.map(d => {
+            const carrier = DB.find('carriers', d.carrierId);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.85rem">
+              <div style="width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.7rem;flex-shrink:0">${esc(d.name[0])}</div>
+              <div><div style="font-weight:600">${esc(d.name)}</div><div style="color:var(--text-muted);font-size:0.75rem">${carrier?esc(carrier.name):'—'}</div></div>
+            </div>`;
+          }).join('')
+        : '<p style="color:var(--text-muted);font-size:0.85rem">No drivers available</p>';
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports – FreightFlow TMS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button id="hamburger" class="hamburger">&#9776;</button>
+        <h1>Reports</h1>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Summary stats -->
+      <div class="stats-grid" id="report-stats"></div>
+
+      <div class="report-grid">
+        <!-- Revenue by carrier -->
+        <div class="card">
+          <div class="card-title">Revenue by Carrier</div>
+          <div id="carrier-revenue-chart" class="chart-bar-wrap"></div>
+        </div>
+
+        <!-- Loads by status -->
+        <div class="card">
+          <div class="card-title">Loads by Status</div>
+          <div id="status-chart" class="chart-bar-wrap"></div>
+        </div>
+
+        <!-- Top shippers -->
+        <div class="card">
+          <div class="card-title">Top Shippers by Revenue</div>
+          <div id="shipper-chart" class="chart-bar-wrap"></div>
+        </div>
+
+        <!-- Load volume by commodity -->
+        <div class="card">
+          <div class="card-title">Load Volume by Commodity</div>
+          <div id="commodity-chart" class="chart-bar-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Load Summary Table -->
+      <div class="table-wrap" style="margin-top:20px">
+        <div class="table-wrap-header"><h3>All Loads Summary</h3></div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Load #</th>
+                <th>Shipper</th>
+                <th>Route</th>
+                <th>Commodity</th>
+                <th>Weight</th>
+                <th>Carrier</th>
+                <th>Status</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody id="report-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>
